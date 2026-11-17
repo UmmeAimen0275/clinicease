@@ -1,0 +1,78 @@
+// Generate JavaScript code for our database
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Which database to use. Values come from .env
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  PATIENT
+  DOCTOR
+  ADMIN
+}
+
+enum Status {
+  BOOKED
+  CHECKED_IN
+  COMPLETED
+  CANCELLED
+}
+
+// Everyone who logs in: patient, doctor or admin
+model User {
+  id           String        @id @default(cuid())
+  name         String
+  email        String        @unique
+  passwordHash String
+  role         Role          @default(PATIENT)
+  createdAt    DateTime      @default(now())
+  doctor       Doctor?
+  appointments Appointment[] @relation("PatientAppts")
+}
+
+// Extra info for users who are doctors
+model Doctor {
+  id           String        @id @default(cuid())
+  userId       String        @unique
+  user         User          @relation(fields: [userId], references: [id])
+  specialty    String
+  bio          String?
+  fee          Int
+  workStart    Int           @default(9)
+  workEnd      Int           @default(17)
+  appointments Appointment[]
+}
+
+// One booking between a patient and a doctor
+model Appointment {
+  id        String   @id @default(cuid())
+  patientId String
+  patient   User     @relation("PatientAppts", fields: [patientId], references: [id])
+  doctorId  String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+  slotStart DateTime
+  status    Status   @default(BOOKED)
+  reason    String?
+  notes     String?
+  token     Int?
+  createdAt DateTime @default(now())
+
+  // The database refuses two bookings for the same doctor at the same time
+  @@unique([doctorId, slotStart])
+  @@index([patientId])
+}
+
+// Records important actions
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  targetId  String?
+  createdAt DateTime @default(now())
+}
