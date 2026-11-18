@@ -3,6 +3,7 @@ import { todayRangePK } from "@/lib/day";
 import { formatDay, formatTime } from "@/lib/format";
 import { AdminCharts } from "@/components/admin-charts";
 import { Users, Stethoscope, CalendarDays, CheckCheck, UserX, Activity } from "lucide-react";
+export const dynamic = "force-dynamic"; // always show fresh numbers
 
 const DAY = 86_400_000;
 const shortDay = (d: Date) =>

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { DoctorSearch } from "@/components/doctor-search";
+export const dynamic = "force-dynamic"; // always read fresh data, never at build time
 
 export default async function DoctorsPage() {
   // Read all doctors from Neon, with their names

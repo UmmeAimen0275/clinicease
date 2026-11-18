@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { formatDay } from "@/lib/format";
 import { AddDoctorForm } from "@/components/add-doctor-form";
+export const dynamic = "force-dynamic";
 
 export default async function UsersPage() {
   const [doctors, patients] = await Promise.all([

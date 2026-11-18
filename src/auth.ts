@@ -5,6 +5,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { authConfig } from "./auth.config";
 import { withRetry } from "@/lib/retry";
+import { isBlocked, recordFailure, clearFailures } from "@/lib/rate-limit";
+
 // These 4 things are used all over the app:
 //   handlers -> the login/logout URLs
 //   auth     -> "who is logged in?" (on the server)
@@ -21,26 +23,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           .safeParse(credentials);
         if (!parsed.success) return null;
 
-        // 2. Find this user in Neon
-      const user = await withRetry(() =>
-  prisma.user.findUnique({ where: { email: parsed.data.email.toLowerCase() } })
-);
-        if (!user) return null;
+        const email = parsed.data.email.toLowerCase();
 
-        // 3. Compare the typed password with the stored hash
-        const ok = await bcrypt.compare(
-          parsed.data.password,
-          user.passwordHash,
+        // 2. Too many wrong tries? Refuse without checking the database
+        if (isBlocked(email)) return null;
+
+        // 3. Find the user in Neon (retries if the database is waking up)
+        const user = await withRetry(() =>
+          prisma.user.findUnique({ where: { email } })
         );
-        if (!ok) return null;
 
-        // 4. Success. These values go into the session.
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        };
+        // 4. Compare the typed password with the stored hash
+        const ok = user
+          ? await bcrypt.compare(parsed.data.password, user.passwordHash)
+          : false;
+
+        if (!user || !ok) {
+          recordFailure(email); // count the failed attempt
+          return null;
+        }
+
+        // 5. Success: clear the counter. These values go into the session.
+        clearFailures(email);
+        return { id: user.id, name: user.name, email: user.email, role: user.role };
       },
     }),
   ],

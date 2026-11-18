@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { formatDay, formatTime } from "@/lib/format";
 import { CancelButton } from "@/components/cancel-button";
 import { CalendarPlus, CalendarCheck2 } from "lucide-react";
-
+export const dynamic = "force-dynamic";
 // Colors for each status badge
 const statusStyle: Record<string, string> = {
   BOOKED: "bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300",
@@ -93,7 +93,7 @@ export default async function PatientHome() {
                   · {formatDay(a.slotStart)}
                 </span>
               </p>
-              {a.notes && <p className="mt-1 text-sm text-muted-foreground">Doctor's notes: {a.notes}</p>}
+             {a.notes && <p className="mt-1 text-sm text-muted-foreground">Doctor&apos;s notes: {a.notes}</p>}
             </div>
           ))}
         </section>

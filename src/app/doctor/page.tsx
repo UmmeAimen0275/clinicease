@@ -30,7 +30,7 @@ export default async function DoctorHome() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">{session!.user.name}</h1>
-        <p className="text-muted-foreground">{doctor.specialty} · today's queue</p>
+        <p className="text-muted-foreground">{doctor.specialty} · today&apos;s queue</p>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
