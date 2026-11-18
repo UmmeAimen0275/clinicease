@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { auth } from "@/auth";
+
+import { auth, signOut } from "@/auth";
 import { CountUp } from "@/components/count-up";
 import { HowItWorks, DemoAccounts } from "@/components/landing-extras";
 import { HeartPulse, CalendarCheck2, ShieldCheck, MonitorSmartphone, BellRing, ArrowRight } from "lucide-react";
@@ -25,21 +26,33 @@ export default async function Home() {
             </span>
             ClinicEase
           </span>
-          <nav className="flex items-center gap-2 text-sm">
-            <Link href="/queue" className="hidden rounded-md px-3 py-2 hover:bg-muted sm:block">Live queue</Link>
-            {session ? (
-              <Link href="/dashboard" className="rounded-lg bg-teal-600 px-4 py-2 font-medium text-white hover:bg-teal-700">
-                Dashboard
-              </Link>
-            ) : (
-              <>
-                <Link href="/login" className="rounded-md px-3 py-2 hover:bg-muted">Log in</Link>
-                <Link href="/register" className="rounded-lg bg-teal-600 px-4 py-2 font-medium text-white hover:bg-teal-700">
-                  Sign up
-                </Link>
-              </>
-            )}
-          </nav>
+         <nav className="flex items-center gap-1 text-sm">
+  <Link href="/queue" className="rounded-md px-2 py-2 hover:bg-muted sm:px-3">
+    Queue
+  </Link>
+  {session ? (
+    <>
+      <Link href="/dashboard" className="rounded-lg bg-teal-600 px-3 py-2 font-medium text-white hover:bg-teal-700">
+        Dashboard
+      </Link>
+      <form
+        action={async () => {
+          "use server";
+          await signOut({ redirectTo: "/" });
+        }}
+      >
+        <button className="rounded-md px-2 py-2 hover:bg-muted sm:px-3">Log out</button>
+      </form>
+    </>
+  ) : (
+    <>
+      <Link href="/login" className="rounded-md px-2 py-2 hover:bg-muted sm:px-3">Log in</Link>
+      <Link href="/register" className="rounded-lg bg-teal-600 px-3 py-2 font-medium text-white hover:bg-teal-700">
+        Sign up
+      </Link>
+    </>
+  )}
+</nav>
         </div>
       </header>
 
