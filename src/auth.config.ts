@@ -35,16 +35,20 @@ export const authConfig = {
     },
 
     // Runs on EVERY page request: who may open which URL?
-    authorized({ auth, request: { nextUrl } }) {
-      const role = auth?.user?.role;
-      const path = nextUrl.pathname;
+   authorized({ auth, request: { nextUrl } }) {
+  const role = auth?.user?.role;
+  const path = nextUrl.pathname;
 
-      if (path.startsWith("/admin")) return role === "ADMIN";
-      if (path.startsWith("/doctor")) return role === "DOCTOR";
-      if (path.startsWith("/patient")) return role === "PATIENT";
-      if (path.startsWith("/dashboard")) return !!auth?.user;
+  // Already logged in? Skip the login and register pages
+  if ((path === "/login" || path === "/register") && auth?.user)
+    return Response.redirect(new URL("/dashboard", nextUrl));
 
-      return true; // every other page is public
-    },
+  if (path.startsWith("/admin")) return role === "ADMIN";
+  if (path.startsWith("/doctor")) return role === "DOCTOR";
+  if (path.startsWith("/patient")) return role === "PATIENT";
+  if (path.startsWith("/dashboard")) return !!auth?.user;
+
+  return true; // every other page is public
+},
   },
 } satisfies NextAuthConfig;

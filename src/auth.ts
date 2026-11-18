@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { authConfig } from "./auth.config";
-
+import { withRetry } from "@/lib/retry";
 // These 4 things are used all over the app:
 //   handlers -> the login/logout URLs
 //   auth     -> "who is logged in?" (on the server)
@@ -22,9 +22,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!parsed.success) return null;
 
         // 2. Find this user in Neon
-        const user = await prisma.user.findUnique({
-          where: { email: parsed.data.email.toLowerCase() },
-        });
+      const user = await withRetry(() =>
+  prisma.user.findUnique({ where: { email: parsed.data.email.toLowerCase() } })
+);
         if (!user) return null;
 
         // 3. Compare the typed password with the stored hash

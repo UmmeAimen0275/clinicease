@@ -3,7 +3,7 @@
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-
+import { withRetry } from "@/lib/retry";
 // The rules for a valid signup
 const schema = z.object({
   name: z.string().min(2, "Name is too short").max(60),
@@ -21,7 +21,7 @@ export async function registerUser(input: unknown) {
   const email = parsed.data.email.toLowerCase();
 
   // Is this email already used?
-  const exists = await prisma.user.findUnique({ where: { email } });
+  const exists = await withRetry(() => prisma.user.findUnique({ where: { email } }));
   if (exists) return { ok: false, error: "This email is already registered" };
 
   // Hash the password. We NEVER store the real one.
